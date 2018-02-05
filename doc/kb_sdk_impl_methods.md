@@ -87,6 +87,38 @@ class <ModuleName>:
         #END_CONSTRUCTOR
         pass
 ```
+##### Calling one SDK module from another
+
+We use Python for the examples, but the principles are the same in other languages. Here we assume that the reader is familiar with how to read KIDL specifications and figure out the inputs to a function from the spec.
+
+1.  Find the module and function that you wish to call from your SDK module with the catalog function and module browsers<br/>
+    a.  [https://ci.kbase.us/#catalog/modules](https://ci.kbase.us/#catalog/modules)<br/>
+    b.  [https://ci.kbase.us/#catalog/functions](https://ci.kbase.us/#catalog/functions)<br/>
+2.  Note the status of the module - released, beta, or dev. <br/>
+    a.  The icons at the bottom of the function box provide a shortcut for this information.<br/>
+3.  Using the SDK, install the module client. From inside your module:<br/>
+    a.  kb-sdk install <module_name><br/>
+    b.  If the module doesn't install, check the sdk.cfg file created in the root directory of your module. You may need to change the url for the catalog service to the ci, next, or appdev url.<br/>
+    c.  for more help, kb-sdk help install.<br/>
+4.  Import the client in your code:<br/>
+    a.  from <module_name>.<module_name>Client import <module_name><br/>
+    b.  [Example](https://github.com/kbaseapps/ReadsUtils/blob/87ea88e8ce5bb5f2709ae672d7a8b862c9fc9efa/lib/ReadsUtils/ReadsUtilsImpl.py#L7)<br/>
+5.  Set up the callback url in your constructor:<br/>
+    a.  self.callback_url = os.environ['SDK_CALLBACK_URL']<br/>
+    b.  [Example](https://github.com/kbaseapps/ReadsUtils/blob/87ea88e8ce5bb5f2709ae672d7a8b862c9fc9efa/lib/ReadsUtils/ReadsUtilsImpl.py#L166)
+6.  Initialize the client:<br/>
+    a.  cli = <module_name>(self.callback_url)<br/>
+    b.  [Example](https://github.com/kbaseapps/ReadsUtils/blob/87ea88e8ce5bb5f2709ae672d7a8b862c9fc9efa/lib/ReadsUtils/ReadsUtilsImpl.py#L354)
+         (Note that the example passes a token into the client, which is not actually necessary.)<br/>
+    c.  To use an alternate release version, use the keyword argument service_ver:<br/>
+        cli = <module_name>(self.callback_url, service_ver='dev')<br/>
+        (Before releasing your module to production, remove any service_ver arguments.)
+7.  Call the function:<br/>
+    a. result = cli.<function_name>(input)<br/>
+    b. [Example](https://github.com/kbaseapps/ReadsUtils/blob/87ea88e8ce5bb5f2709ae672d7a8b862c9fc9efa/lib/ReadsUtils/ReadsUtilsImpl.py#L356)
+
+Note that only files located in the scratch space (in tests this is available via the test config [e.g. in python cls.cfg[‘scratch’]) will be visible to both modules. In particular, files in the test/data folder will not be visible to the called function and must be moved to the scratch space at the start of the test.
+
 
 [\[Back to top\]](#top)
 
